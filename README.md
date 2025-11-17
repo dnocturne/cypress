@@ -101,7 +101,7 @@ Trigger: push to master → Install deps → Run tests in parallel → Upload ar
 ```
 
 ####  **Nightly Full Suite** (`.github/workflows/nightly.yml`)
--  Paleidžiamas: Kiekvieną naktį 2:00 UTC
+-  Paleidžiamas: Kiekvieną naktį 3:30 UTC
 -  Testuoja: Visus 6 test suites atskirai
 -  Siunčia: Pranešimus apie rezultatus
 -  Tikslas: Pilnas regresijos testavimas
