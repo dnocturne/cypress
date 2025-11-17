@@ -1,0 +1,74 @@
+name: Nightly Full Test Suite
+
+on:
+  schedule:
+    # Paleisti kiekvieną naktį 3:30 val. UTC laiku
+    # Automatinis naktinis testavimas užtikrina sistemos stabilumą
+    - cron: '30 3 * * *'
+  workflow_dispatch:
+
+jobs:
+  full-test-suite:
+    runs-on: ubuntu-latest
+
+    strategy:
+      # Neleisti sustabdyti visų testų, jei vienas nepavyksta
+      fail-fast: false
+      matrix:
+        # Visi testų failai bus paleisti paraleliai
+        spec:
+          - cypress/e2e/sweetshop.smoke.cy.js
+          - cypress/e2e/sweetshop.auth.cy.js
+          - cypress/e2e/sweetshop.homepage.cy.js
+          - cypress/e2e/sweetshop.catalog-basket.cy.js
+          - cypress/e2e/sweetshop.basket-validation.cy.js
+          - cypress/e2e/sweetshop.checkout.cy.js
+
+    steps:
+      # Gauti naujausią projekto kodą
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Nustatyti Node.js aplinką
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      # Įdiegti visas projekto priklausomybes
+      - name: Install dependencies
+        run: npm ci
+
+      # Paleisti Cypress testus Chrome naršyklėje
+      - name: Run Cypress test suite
+        uses: cypress-io/github-action@v6
+        with:
+          browser: chrome
+          spec: ${{ matrix.spec }}
+          record: false
+
+      # Įkelti ekrano kopijas (screenshots) jei testas nepavyko
+      - name: Upload test artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ matrix.spec }}
+          path: cypress/screenshots
+          if-no-files-found: ignore
+
+  notify:
+    # Pranešimų siuntimas po testų įvykdymo
+    needs: full-test-suite
+    runs-on: ubuntu-latest
+    if: always()
+
+    steps:
+      # Išsiųsti pranešimą apie testų rezultatus
+      - name: Send notification
+        run: |
+          if [ "${{ needs.full-test-suite.result }}" == "success" ]; then
+            echo "✅ Visi naktiniai testai sėkmingai įvykdyti!"
+          else
+            echo "❌ Kai kurie naktiniai testai nepavyko!"
+          fi

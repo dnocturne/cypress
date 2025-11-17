@@ -1,0 +1,72 @@
+name: Manual Test Run
+
+on:
+  # Leidžia paleisti testus rankiniu būdu su pasirinktais parametrais
+  workflow_dispatch:
+    inputs:
+      spec:
+        description: 'Pasirinkti testą (pvz., cypress/e2e/sweetshop.smoke.cy.js arba visus)'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - cypress/e2e/sweetshop.smoke.cy.js
+          - cypress/e2e/sweetshop.auth.cy.js
+          - cypress/e2e/sweetshop.homepage.cy.js
+          - cypress/e2e/sweetshop.catalog-basket.cy.js
+          - cypress/e2e/sweetshop.basket-validation.cy.js
+          - cypress/e2e/sweetshop.checkout.cy.js
+      browser:
+        description: 'Pasirinkti naršyklę'
+        required: true
+        default: 'chrome'
+        type: choice
+        options:
+          - chrome
+          - firefox
+          - edge
+      headed:
+        description: 'Paleisti su matoma naršykle (headed mode)'
+        required: false
+        default: false
+        type: boolean
+
+jobs:
+  manual-test:
+    # Rankinis testų paleidimas su vartotojo pasirinktais nustatymais
+    runs-on: ubuntu-latest
+
+    steps:
+      # Atsisiųsti projekto kodą
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Nustatyti Node.js aplinką
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      # Įdiegti priklausomybes
+      - name: Install dependencies
+        run: npm ci
+
+      # Paleisti pasirinktą testą su pasirinkta naršykle
+      - name: Run selected test
+        uses: cypress-io/github-action@v6
+        with:
+          browser: ${{ inputs.browser }}
+          spec: ${{ inputs.spec == 'all' && 'cypress/e2e/sweetshop.*.cy.js' || inputs.spec }}
+          headed: ${{ inputs.headed }}
+          record: false
+
+      # Išsaugoti testų rezultatus jei testai nepavyko
+      - name: Upload test results
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: manual-test-results
+          path: cypress/screenshots
+          if-no-files-found: ignore

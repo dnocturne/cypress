@@ -1,0 +1,106 @@
+name: Cypress Tests
+
+on:
+  # Paleisti testus kai yra push į main arba develop šakas
+  push:
+    branches: [ main, develop ]
+  # Paleisti testus kai kuriamas pull request
+  pull_request:
+    branches: [ main, develop ]
+  # Paleisti testus automatiškai kiekvieną dieną 14:45 val. UTC laiku
+  schedule:
+    - cron: '45 14 * * *'
+  # Leisti rankinį paleidimą iš GitHub UI
+  workflow_dispatch:
+
+jobs:
+  cypress-run:
+    runs-on: ubuntu-latest
+
+    strategy:
+      # Tęsti testus net jei vienas naršyklės testas nepavyksta
+      fail-fast: false
+      matrix:
+        # Testuoti su trimis skirtingomis naršyklėmis
+        browser: [chrome, firefox, edge]
+
+    steps:
+      # Atsisiųsti naujausią projekto kodą iš repository
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Paruošti Node.js aplinką testavimui
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      # Įdiegti visas projekto priklausomybes (dependencies)
+      - name: Install dependencies
+        run: npm ci
+
+      # Paleisti Cypress end-to-end testus pasirinktoje naršyklėje
+      - name: Run Cypress tests
+        uses: cypress-io/github-action@v6
+        with:
+          browser: ${{ matrix.browser }}
+          spec: cypress/e2e/sweetshop.*.cy.js
+          record: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Išsaugoti ekrano kopijas (screenshots) jei testai nepavyko
+      - name: Upload screenshots on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cypress-screenshots-${{ matrix.browser }}
+          path: cypress/screenshots
+          if-no-files-found: ignore
+
+      # Pastaba: Video įrašymas išjungtas cypress.config.js faile (video: false)
+      # - name: Upload videos
+      #   if: always()
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: cypress-videos-${{ matrix.browser }}-${{ matrix.containers }}
+      #     path: cypress/videos
+      #     if-no-files-found: ignore
+
+  smoke-tests:
+    # Greiti smoke testai patikrina pagrindinę funkcionalumą
+    runs-on: ubuntu-latest
+
+    steps:
+      # Gauti projekto kodą
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Nustatyti Node.js versiją
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      # Įdiegti npm paketus
+      - name: Install dependencies
+        run: npm ci
+
+      # Paleisti smoke testus - greitai patikrina ar sistema veikia
+      - name: Run smoke tests
+        uses: cypress-io/github-action@v6
+        with:
+          browser: chrome
+          spec: cypress/e2e/sweetshop.smoke.cy.js
+          record: false
+
+      # Išsaugoti nepavykusių testų ekrano kopijas
+      - name: Upload screenshots on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cypress-smoke-screenshots
+          path: cypress/screenshots
+          if-no-files-found: ignore
