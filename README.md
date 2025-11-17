@@ -90,35 +90,40 @@ npm run test:headed
 Projektas naudoja **4 GitHub Actions workflows**:
 
 ####  **Main Cypress Tests** (`.github/workflows/cypress.yml`)
--  Paleidžiamas: `push` į `master`/`develop` šakas, `pull request`, kasdien 9:00 UTC
+-  Paleidžiamas: `push` į `master`/`develop` šakas, `pull request`, kasdien 14:45 UTC
 -  Testuoja: **Chrome, Firefox, Edge** naršyklėse
--  Naudoja: Paralelizaciją su 2 konteineriais
--  Rezultatai: Automatiškai įkeliami screenshots/videos esant klaidoms
+-  Naudoja: Paralelizaciją su 3 naršyklėmis (fail-fast išjungtas)
+-  Rezultatai: Automatiškai įkeliami screenshots esant klaidoms
+-  Komentarai: Visi komentarai lietuvių kalba
 
 **Kaip veikia:**
 ```yaml
-Trigger: push to master → Install deps → Run tests in parallel → Upload artifacts
+Trigger: push to master → Install deps → Run tests in 3 browsers parallel → Upload artifacts
 ```
 
 ####  **Nightly Full Suite** (`.github/workflows/nightly.yml`)
 -  Paleidžiamas: Kiekvieną naktį 3:30 UTC
--  Testuoja: Visus 6 test suites atskirai
--  Siunčia: Pranešimus apie rezultatus
+-  Testuoja: Visus 6 test suites atskirai paraleliai (matrix strategy)
+-  Siunčia: Pranešimus apie rezultatus lietuviškai
 -  Tikslas: Pilnas regresijos testavimas
+-  Komentarai: Visi komentarai lietuvių kalba
 
 ####  **PR Tests** (`.github/workflows/pr-tests.yml`)
--  Paleidžiamas: Pull Request atidarymas/atnaujinimas
+-  Paleidžiamas: Pull Request atidarymas/atnaujinimas/peratidarymas
 -  Testuoja: Tik smoke ir auth testus (greiti kritiškiausi testai)
--  Komentuoja: PR su rezultatais
+-  Komentuoja: PR su rezultatais lietuviškai ("Smoke testai sėkmingai įvykdyti!")
 -  Tikslas: Greitas feedback ciklas
+-  Komentarai: Visi komentarai lietuvių kalba
 
 ####  **Manual Test Run** (`.github/workflows/manual-run.yml`)
 -  Paleidžiamas: Rankiniu būdu per GitHub UI
 -  Galima pasirinkti:
-  - Kokį spec failą paleisti
-  - Kokią naršyklę naudoti
+  - Kokį spec failą paleisti (all arba konkretų testą)
+  - Kokią naršyklę naudoti (Chrome/Firefox/Edge)
   - Headed/headless režimą
+-  Aprašymai: Lietuvių kalba GitHub UI
 -  Tikslas: Debugging ir ad-hoc testavimas
+-  Komentarai: Visi komentarai lietuvių kalba
 
 ### Kaip paleisti CI/CD:
 
@@ -157,8 +162,8 @@ Actions → Workflow run → Artifacts section → Download
 
 ```
 cypress/
-├── e2e/                              # Test failai
-│   ├── sweetshop.smoke.cy.js         # Smoke testai (2 tests)
+├── e2e/                              # Test failai (su lietuviškais komentarais)
+│   ├── sweetshop.smoke.cy.js         # Smoke testai (4 tests)
 │   ├── sweetshop.auth.cy.js          # Login testai (5 tests)
 │   ├── sweetshop.homepage.cy.js      # Homepage testai (8 tests)
 │   ├── sweetshop.catalog-basket.cy.js # Katalogo testai (10 tests)
@@ -173,11 +178,11 @@ cypress/
 └── videos/                          # Test execution videos
 
 .github/
-└── workflows/                        # CI/CD workflows
-    ├── cypress.yml                   # Pagrindiniai testai
-    ├── nightly.yml                   # Naktiniai testai
-    ├── pr-tests.yml                  # PR testai
-    └── manual-run.yml                # Rankiniai testai
+└── workflows/                        # CI/CD workflows (su lietuviškais komentarais)
+    ├── cypress.yml                   # Pagrindiniai testai (14:45 UTC)
+    ├── nightly.yml                   # Naktiniai testai (3:30 UTC)
+    ├── pr-tests.yml                  # PR testai (on pull_request)
+    └── manual-run.yml                # Rankiniai testai (workflow_dispatch)
 
 cypress.config.js                     # Cypress konfiguracija
 package.json                          # NPM dependencies ir scripts
@@ -194,6 +199,41 @@ cy.basketBadge()                     // Gauti krepšelio badge elementą
 cy.assertNoVisibleInvalidFeedback()  // Tikrinti validacijos klaidas
 ```
 
+## Lietuviški testų duomenys
+
+Visi testai naudoja lietuviškus duomenis:
+
+### Testų duomenų pavyzdžiai:
+```javascript
+// Vardai ir pavardės
+- Petras Petraitis
+- Jonas Jonaitis
+- Antanas Antanaitis
+
+// El. pašto adresai
+- petras.petraitis@gmail.com
+- jonas.jonaitis@gmail.com
+- demo@demo.lt
+
+// Adresai
+- Gedimino pr. 15
+- Vytauto pr. 25
+
+// Slaptažodžiai
+- Slaptazodis123!
+- testas2025
+- manoSlaptazodis321
+
+// Kortelių duomenys
+- Galiojimo datos: 08/28, 06/29
+- CVV: 456, 789
+```
+
+### Wait times
+Testai naudoja realistiškus wait times:
+- Krepšelio atnaujinimas: 750ms (pakeista iš 500ms)
+- Timeout: 3000ms navigacijai
+
 ## Žinomos aplikacijos problemos
 
 Sweet Shop aplikacija turi sąmoningai įdėtų klaidų:
@@ -207,15 +247,22 @@ Testai yra pritaikyti dirbti su šiomis problemomis.
 
 ## 📊 Testų Padengimas
 
-| Test Suite | Testų skaičius | Būsena |
-|-----------|-------------|--------|
-| Smoke | 4 | ✅ |
-| Auth | 5 | ✅ |
-| Homepage | 8 | ✅ |
-| Catalog & Basket | 10 | ✅ |
-| Basket Validation | 11 | ✅ |
-| Checkout | 13 | ✅ |
-| **Total** | **51** | **✅** |
+| Test Suite | Testų skaičius | Būsena | Komentarai |
+|-----------|-------------|--------|-----------|
+| Smoke | 4 | ✅ | Lietuviški test names ir komentarai |
+| Auth | 5 | ✅ | Lietuviški test names ir komentarai |
+| Homepage | 8 | ✅ | Lietuviški test names ir komentarai |
+| Catalog & Basket | 10 | ✅ | Lietuviški test names ir komentarai |
+| Basket Validation | 11 | ✅ | Lietuviški test names ir komentarai |
+| Checkout | 13 | ✅ | Lietuviški test names ir komentarai |
+| **Total** | **51** | **✅** | **Visi testai su lietuviškais pavadinimais** |
+
+### Testų pavyzdžiai:
+- ✅ "Atidaro pradinį puslapį ir patikrina antraštę bei navigaciją"
+- ✅ "Patikrina ar visi paveikslėliai užkrauti teisingai"
+- ✅ "Prideda kelias prekes, tikrina skaičiavimus ir pristatymo pasirinkimus"
+- ✅ "Visi prisijungimo formos laukai rodomi teisingai"
+- ✅ "Neužpildyta forma rodo visas klaidas"
 
 ## Nuorodos
 
