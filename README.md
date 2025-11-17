@@ -90,14 +90,14 @@ npm run test:headed
 Projektas naudoja **4 GitHub Actions workflows**:
 
 ####  **Main Cypress Tests** (`.github/workflows/cypress.yml`)
--  Paleidžiamas: `push` į `main`/`develop` šakas, `pull request`, kasdien 9:00 UTC
+-  Paleidžiamas: `push` į `master`/`develop` šakas, `pull request`, kasdien 9:00 UTC
 -  Testuoja: **Chrome, Firefox, Edge** naršyklėse
 -  Naudoja: Paralelizaciją su 2 konteineriais
 -  Rezultatai: Automatiškai įkeliami screenshots/videos esant klaidoms
 
 **Kaip veikia:**
 ```yaml
-Trigger: push to main → Install deps → Run tests in parallel → Upload artifacts
+Trigger: push to master → Install deps → Run tests in parallel → Upload artifacts
 ```
 
 ####  **Nightly Full Suite** (`.github/workflows/nightly.yml`)
@@ -124,10 +124,10 @@ Trigger: push to main → Install deps → Run tests in parallel → Upload arti
 
 #### Automatinis paleidimas:
 ```bash
-# Commit ir push į main šaką
+# Commit ir push į master šaką
 git add .
 git commit -m "feat: add new tests"
-git push origin main
+git push origin master
 ```
 
 #### Rankinis paleidimas:
