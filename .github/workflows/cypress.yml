@@ -3,10 +3,10 @@ name: Cypress Tests
 on:
   # Paleisti testus kai yra push į main arba develop šakas
   push:
-    branches: [ main, develop ]
+    branches: [ master, develop ]
   # Paleisti testus kai kuriamas pull request
   pull_request:
-    branches: [ main, develop ]
+    branches: [ master, develop ]
   # Paleisti testus automatiškai kiekvieną dieną 14:45 val. UTC laiku
   schedule:
     - cron: '45 14 * * *'
