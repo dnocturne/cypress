@@ -4,6 +4,7 @@ module.exports = {
     viewportWidth: 1280,
     viewportHeight: 900,
     defaultCommandTimeout: 10000,
+    pageLoadTimeout: 120000,
     video: false,
     retries: {
       runMode: 2,
