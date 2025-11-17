@@ -24,7 +24,18 @@ jobs:
         # Testuoti su trimis skirtingomis naršyklėmis
         browser: [chrome, firefox, edge]
         # Paskirstyti testus per 3 paralelias mašinas greitesniam vykdymui
-        containers: [1, 2, 3]
+        # Kiekvienas konteineris paleidžia skirtingą testų grupę
+        shard: [1, 2, 3]
+        include:
+          # Konteineris 1: smoke + auth testai
+          - shard: 1
+            spec: 'cypress/e2e/sweetshop.smoke.cy.js,cypress/e2e/sweetshop.auth.cy.js'
+          # Konteineris 2: homepage + catalog-basket testai
+          - shard: 2
+            spec: 'cypress/e2e/sweetshop.homepage.cy.js,cypress/e2e/sweetshop.catalog-basket.cy.js'
+          # Konteineris 3: basket-validation + checkout testai
+          - shard: 3
+            spec: 'cypress/e2e/sweetshop.basket-validation.cy.js,cypress/e2e/sweetshop.checkout.cy.js'
 
     steps:
       # Atsisiųsti naujausią projekto kodą iš repository
@@ -42,17 +53,14 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # Paleisti Cypress end-to-end testus pasirinktoje naršyklėje su paralelizacija
-      # Testai paskirstomi tarp 3 konteinerių, kiekvienas naršyklė gauna 1/3 testų
-      - name: Run Cypress tests
+      # Paleisti Cypress end-to-end testus pasirinktoje naršyklėje
+      # Testai paskirstyti rankiniu būdu tarp konteinerių (nereikia Cypress Cloud)
+      - name: Run Cypress tests (Shard ${{ matrix.shard }})
         uses: cypress-io/github-action@v6
         with:
           browser: ${{ matrix.browser }}
-          spec: cypress/e2e/sweetshop.*.cy.js
+          spec: ${{ matrix.spec }}
           record: false
-          parallel: true
-          group: 'Tests - ${{ matrix.browser }}'
-          ci-build-id: '${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -61,7 +69,7 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: cypress-screenshots-${{ matrix.browser }}-${{ matrix.containers }}
+          name: cypress-screenshots-${{ matrix.browser }}-shard-${{ matrix.shard }}
           path: cypress/screenshots
           if-no-files-found: ignore
 

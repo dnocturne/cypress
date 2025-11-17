@@ -92,14 +92,18 @@ Projektas naudoja **4 GitHub Actions workflows**:
 ####  **Main Cypress Tests** (`.github/workflows/cypress.yml`)
 -  Paleidžiamas: `push` į `master`/`develop` šakas, `pull request`, kasdien 14:45 UTC
 -  Testuoja: **Chrome, Firefox, Edge** naršyklėse
--  Naudoja: **Paralelizaciją su 3 naršyklėmis × 3 konteineriais = 9 paralelūs testai**
--  Pagerina: Testų vykdymo greitį ~3 kartus paskirstant testus tarp konteinerių
+-  Naudoja: **Paralelizaciją su 3 naršyklėmis × 3 shardais = 9 paralelūs testai**
+-  Testų paskirstymas:
+   - Shard 1: smoke + auth testai (9 testai)
+   - Shard 2: homepage + catalog-basket testai (18 testų)
+   - Shard 3: basket-validation + checkout testai (24 testai)
+-  Pagerina: Testų vykdymo greitį ~3 kartus paskirstant testus tarp shardų
 -  Rezultatai: Automatiškai įkeliami screenshots esant klaidoms
 -  Komentarai: Visi komentarai lietuvių kalba
 
 **Kaip veikia:**
 ```yaml
-Trigger: push to master → Install deps → Run tests in 9 parallel containers (3 browsers × 3 machines) → Upload artifacts
+Trigger: push to master → Install deps → Run tests in 9 parallel shards (3 browsers × 3 test groups) → Upload artifacts
 ```
 
 ####  **Nightly Full Suite** (`.github/workflows/nightly.yml`)
