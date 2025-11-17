@@ -92,13 +92,14 @@ Projektas naudoja **4 GitHub Actions workflows**:
 ####  **Main Cypress Tests** (`.github/workflows/cypress.yml`)
 -  Paleidžiamas: `push` į `master`/`develop` šakas, `pull request`, kasdien 14:45 UTC
 -  Testuoja: **Chrome, Firefox, Edge** naršyklėse
--  Naudoja: Paralelizaciją su 3 naršyklėmis (fail-fast išjungtas)
+-  Naudoja: **Paralelizaciją su 3 naršyklėmis × 3 konteineriais = 9 paralelūs testai**
+-  Pagerina: Testų vykdymo greitį ~3 kartus paskirstant testus tarp konteinerių
 -  Rezultatai: Automatiškai įkeliami screenshots esant klaidoms
 -  Komentarai: Visi komentarai lietuvių kalba
 
 **Kaip veikia:**
 ```yaml
-Trigger: push to master → Install deps → Run tests in 3 browsers parallel → Upload artifacts
+Trigger: push to master → Install deps → Run tests in 9 parallel containers (3 browsers × 3 machines) → Upload artifacts
 ```
 
 ####  **Nightly Full Suite** (`.github/workflows/nightly.yml`)
@@ -229,10 +230,12 @@ Visi testai naudoja lietuviškus duomenis:
 - CVV: 456, 789
 ```
 
-### Wait times
+### Wait times ir timeout konfigūracija
 Testai naudoja realistiškus wait times:
 - Krepšelio atnaujinimas: 750ms (pakeista iš 500ms)
-- Timeout: 3000ms navigacijai
+- Default command timeout: 10000ms (10s)
+- Page load timeout: 120000ms (120s) - pagerintas stabilumui CI/CD aplinkoje
+- Navigacijos timeout: 3000ms
 
 ## Žinomos aplikacijos problemos
 

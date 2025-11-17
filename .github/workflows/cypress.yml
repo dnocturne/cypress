@@ -23,6 +23,8 @@ jobs:
       matrix:
         # Testuoti su trimis skirtingomis naršyklėmis
         browser: [chrome, firefox, edge]
+        # Paskirstyti testus per 3 paralelias mašinas greitesniam vykdymui
+        containers: [1, 2, 3]
 
     steps:
       # Atsisiųsti naujausią projekto kodą iš repository
@@ -40,13 +42,17 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # Paleisti Cypress end-to-end testus pasirinktoje naršyklėje
+      # Paleisti Cypress end-to-end testus pasirinktoje naršyklėje su paralelizacija
+      # Testai paskirstomi tarp 3 konteinerių, kiekvienas naršyklė gauna 1/3 testų
       - name: Run Cypress tests
         uses: cypress-io/github-action@v6
         with:
           browser: ${{ matrix.browser }}
           spec: cypress/e2e/sweetshop.*.cy.js
           record: false
+          parallel: true
+          group: 'Tests - ${{ matrix.browser }}'
+          ci-build-id: '${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -55,7 +61,7 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: cypress-screenshots-${{ matrix.browser }}
+          name: cypress-screenshots-${{ matrix.browser }}-${{ matrix.containers }}
           path: cypress/screenshots
           if-no-files-found: ignore
 
